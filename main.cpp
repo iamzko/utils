@@ -1,5 +1,6 @@
-#define CATCH_CONFIG_MAIN  // 当前宏强制Catch在当前编译单元中创建 main()，这个宏只能出现在一个CPP文件中，因为一个项目只能有一个有效的main函数
+//#define CATCH_CONFIG_MAIN  // 当前宏强制Catch在当前编译单元中创建 main()，这个宏只能出现在一个CPP文件中，因为一个项目只能有一个有效的main函数
 #include <iostream>
+#include <functional>
 #include "catch.hpp"
 //斐波那契数列
 auto fib(int n)
@@ -26,14 +27,45 @@ auto factorial(int n)
     }
 }
 
+int add (int a, int b)
+{
+    return a + b;
+}
+void add_a(int &a,int b)
+{
+    a = a+ b;
+    return;
+}
 
-//int main()
-//{
-//    std::cout << "Hello, World!" << std::endl;
-//    std::cout << fib(1) << std::endl;
-//    return 0;
-//}
 
+void bind_test()
+{
+    auto add1 = std::bind(add,1,std::placeholders::_1);
+    std::cout << add1(3) << std::endl;
+    int temp = 1000;
+    auto add2 = std::bind(add_a,std::ref(temp),std::placeholders::_1);//bind预先绑定的参数需要传具体的变量或值进去，对于预先绑定的参数，是pass-by-value的。除非该参数被std::ref或者std::cref包装，才pass-by-reference。
+    add2(24);
+    std::cout << temp << std::endl;
+    add_a(temp,24);
+    std::cout << temp << std::endl;
+}
+void function_test()
+{
+    std::function<int(int,int)> add1 = add;
+    std::cout <<  add1(3,4)<< std::endl;
+}
+
+
+#ifndef CATCH_CONFIG_MAIN
+int main()
+{
+    std::cout << "Hello, World!" << std::endl;
+//    std::cout << fib(1000) << std::endl;
+    bind_test();
+    function_test();
+    return 0;
+}
+#else
 TEST_CASE( "fib are computed", "[fib]" )
 {
     REQUIRE( fib(0) == 1 );
@@ -60,6 +92,5 @@ SCENARIO("factorial test","[factorial]")
         }
     }
     REQUIRE(factorial(3) == 6);
-
-
 }
+#endif
